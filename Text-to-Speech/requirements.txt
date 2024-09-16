@@ -1,4 +1,0 @@
-Flask
-googletrans
-gtts
-gunicorn
