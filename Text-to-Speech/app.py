@@ -26,7 +26,7 @@ def tts_generate_in_memory(text, lang):
         tts = gTTS(text=text, lang=lang)
         audio_file = io.BytesIO()
         tts.write_to_fp(audio_file)
-        audio_file.seek(0)
+        audio_file.seek(0)  # Reset file pointer after writing
         return audio_file
     except ValueError as e:
         logging.error(f"Error in TTS generation: {e}")
@@ -86,7 +86,8 @@ def play_audio():
     
     if audio_file is None:
         return "Audio not available. Please generate it first."
-    
+
+    audio_file.seek(0)  # Ensure the file pointer is at the beginning
     return send_file(audio_file, mimetype='audio/wav', as_attachment=False)
 
 @app.route('/download')
@@ -96,7 +97,8 @@ def download_audio():
     
     if audio_file is None:
         return "Audio not available. Please generate it first."
-    
+
+    audio_file.seek(0)  # Ensure the file pointer is at the beginning before sending
     return send_file(audio_file, mimetype='audio/wav', as_attachment=True, download_name='output.wav')
 
 if __name__ == '__main__':
