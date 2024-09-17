@@ -4,76 +4,98 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Text to Speech Translation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
-            background-color: #eef2f5;
+            padding: 20px;
+            color: #fff;
         }
         .container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            color: #333;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.1);
             max-width: 500px;
             width: 100%;
         }
         h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 30px;
+            background: -webkit-linear-gradient(#6a11cb, #2575fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         label {
             display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: #333;
-        }
-        textarea {
-            width: 100%;
-            padding: 15px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-            margin-bottom: 20px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
             font-size: 16px;
-            background-color: #f9f9f9;
         }
-        select {
+        textarea, select {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            background-color: #f9f9f9;
             margin-bottom: 20px;
             font-size: 16px;
-            background-color: #f9f9f9;
+            color: #333;
+            transition: border-color 0.3s ease;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+        }
+        textarea {
+            height: 170px; /* Fixed height */
+            resize: none; /* Prevents resizing */
+        }
+        textarea:focus, select:focus {
+            border-color: #6a11cb;
+            outline: none;
+            background-color: #fff;
         }
         input[type="submit"] {
             display: block;
             width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            background-color: #007bff;
+            padding: 15px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
             color: #fff;
             font-size: 18px;
+            font-weight: 500;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
         }
+        /* Hover effect for the submit button */
         input[type="submit"]:hover {
-            background-color: #0056b3;
+            background-color: #5a0ebb;
+            border-color: #ff5722; /* Contrasting color for the border on hover */
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
         @media (max-width: 600px) {
             .container {
-                padding: 20px;
+                padding: 30px;
             }
             h1 {
-                font-size: 22px;
+                font-size: 26px;
             }
             input[type="submit"] {
                 font-size: 16px;
@@ -86,7 +108,7 @@
         <h1>Text to Speech Translation</h1>
         <form action="/result" method="post">
             <label for="input_text">Enter text to translate:</label>
-            <textarea id="input_text" name="input_text" rows="5" placeholder="Type your text here..." required></textarea>
+            <textarea id="input_text" name="input_text" placeholder="Type your text here..." required></textarea>
             
             <label for="target_lang">Select target language:</label>
             <select id="target_lang" name="target_lang" required>
