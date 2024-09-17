@@ -93,7 +93,7 @@ def result():
 @app.route('/download/<filename>')
 def download_file(filename):
     try:
-        return send_file(f'static/{filename}', as_attachment=True)
+        return send_file(f'static/{filename}', as_attachment=True, mimetype='audio/wav')
     except Exception as e:
         logging.error(f"Error sending file: {e}")
         return "Error downloading file."
