@@ -1,16 +1,16 @@
-from flask import Flask, request, render_template, send_file
+from flask import Flask, request, render_template, send_file, redirect, url_for
 from googletrans import Translator
 from gtts import gTTS
-import os
+import io
 import logging
 
 app = Flask(__name__)
 
-# Define the folder where output files will be saved
-OUTPUT_FOLDER = 'static'
-
 # Set up logging
 logging.basicConfig(level=logging.DEBUG)
+
+# Global variable to store audio in memory
+audio_memory = None
 
 def translate_text(text, target_lang='hi'):
     translator = Translator()
@@ -21,24 +21,30 @@ def translate_text(text, target_lang='hi'):
         logging.error(f"Error in translation: {e}")
         return None
 
-def tts_generate(text, lang, filename):
+def tts_generate_in_memory(text, lang):
     try:
         tts = gTTS(text=text, lang=lang)
-        tts.save(filename)
+        # Store audio in a BytesIO object instead of a file
+        audio_file = io.BytesIO()
+        tts.write_to_fp(audio_file)
+        audio_file.seek(0)  # Move the cursor to the beginning of the file
+        return audio_file
     except ValueError as e:
         logging.error(f"Error in TTS generation: {e}")
+        return None
     except Exception as e:
         logging.error(f"Unexpected error in TTS: {e}")
+        return None
 
-# Route to display the form (GET) or handle form submission (POST)
-@app.route('/index', methods=['GET'])
+# Route to display the form (GET)
+@app.route('/', methods=['GET'])
 def index():
-    # This route renders the input form page
     return render_template('index.html')
 
-# Route to handle the result after form submission
+# Route to handle the result after form submission (POST)
 @app.route('/result', methods=['POST'])
 def result():
+    global audio_memory
     if request.method == 'POST':
         input_text = request.form.get('input_text')
         target_lang = request.form.get('target_lang')
@@ -64,39 +70,34 @@ def result():
         if translated_text is None:
             return "Error during translation. Please try again."
 
-        # Ensure the output folder exists, create it if not
-        if not os.path.exists(OUTPUT_FOLDER):
-            os.makedirs(OUTPUT_FOLDER)
+        # Generate TTS audio in memory
+        audio_memory = tts_generate_in_memory(translated_text, lang=target_lang)
         
-        # Create the filename based on the target language
-        filename = f"{OUTPUT_FOLDER}/{target_lang}_output.wav"
-        
-        # Delete the old file if it exists
-        if os.path.exists(filename):
-            os.remove(filename)
-        
-        # Generate TTS
-        try:
-            tts_generate(translated_text, lang=target_lang, filename=filename)
-        except Exception as e:
-            logging.error(f"Error generating TTS: {e}")
+        if audio_memory is None:
             return "Error generating TTS. Please try again."
 
-        # Check if file was created
-        if not os.path.exists(filename):
-            return "Failed to generate audio file. Please try again."
+        # Render result page with a link to listen to the audio or download it
+        return render_template('result.html', translated_text=translated_text)
 
-        # Render the result page with the translated text and generated audio file link
-        return render_template('result.html', translated_text=translated_text, filename=filename)
+# Route to play the audio file in the browser
+@app.route('/play')
+def play_audio():
+    global audio_memory
+    if audio_memory is None:
+        return "Audio not available. Please generate it first."
+    
+    # Stream the audio file to the browser for playback
+    return send_file(audio_memory, mimetype='audio/wav', as_attachment=False)
 
-# Route to handle file downloads
-@app.route('/download/<filename>')
-def download_file(filename):
-    try:
-        return send_file(f'static/{filename}', as_attachment=True, mimetype='audio/wav')
-    except Exception as e:
-        logging.error(f"Error sending file: {e}")
-        return "Error downloading file."
+# Route to download the audio file
+@app.route('/download')
+def download_audio():
+    global audio_memory
+    if audio_memory is None:
+        return "Audio not available. Please generate it first."
+    
+    # Stream the audio file as a downloadable WAV file
+    return send_file(audio_memory, mimetype='audio/wav', as_attachment=True, download_name='output.wav')
 
 if __name__ == '__main__':
     app.run(debug=True)
